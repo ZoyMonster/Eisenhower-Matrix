@@ -31,6 +31,10 @@ document.addEventListener('DOMContentLoaded', function() {
     loadData();
     renderAll();
     initDragAndDrop();
+
+    // 定期刷新日期显示，防止跨天后仍显示前一天
+    // 每分钟检查一次当前日期并更新头部显示
+    setInterval(updateDateDisplay, 60 * 1000);
     
     // 点击模态框外部关闭
     window.onclick = function(event) {
