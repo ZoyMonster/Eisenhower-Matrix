@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>艾森豪威尔矩阵 - 工作日报管理</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="date-display" id="dateDisplay"></div>
+                <button class="settings-btn" onclick="showSettingsModal()" title="设置">⚙️</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 四象限区域 -->
+            <div class="matrix-container">
+                <div class="matrix-grid">
+                    <!-- 第一象限：重要且紧急 -->
+                    <div class="quadrant quadrant-1" data-quadrant="1">
+                        <div class="quadrant-header">
+                            <h2>重要且紧急</h2>
+                            <button class="add-btn" onclick="showAddModal(1)">+ 添加事项</button>
+                        </div>
+                        <div class="items-list" id="quadrant-1-items"></div>
+                    </div>
+
+                    <!-- 第二象限：重要但不紧急 -->
+                    <div class="quadrant quadrant-2" data-quadrant="2">
+                        <div class="quadrant-header">
+                            <h2>重要但不紧急</h2>
+                            <button class="add-btn" onclick="showAddModal(2)">+ 添加事项</button>
+                        </div>
+                        <div class="items-list" id="quadrant-2-items"></div>
+                    </div>
+
+                    <!-- 第三象限：不重要但紧急 -->
+                    <div class="quadrant quadrant-3" data-quadrant="3">
+                        <div class="quadrant-header">
+                            <h2>不重要但紧急</h2>
+                            <button class="add-btn" onclick="showAddModal(3)">+ 添加事项</button>
+                        </div>
+                        <div class="items-list" id="quadrant-3-items"></div>
+                    </div>
+
+                    <!-- 第四象限：不重要且不紧急 -->
+                    <div class="quadrant quadrant-4" data-quadrant="4">
+                        <div class="quadrant-header">
+                            <h2>不重要且不紧急</h2>
+                            <button class="add-btn" onclick="showAddModal(4)">+ 添加事项</button>
+                        </div>
+                        <div class="items-list" id="quadrant-4-items"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧已完成清单 -->
+            <div class="completed-panel">
+                <div class="completed-header">
+                    <h2>已完成清单</h2>
+                    <button class="clear-btn" onclick="clearCompleted()">清空</button>
+                </div>
+                <div class="completed-list" id="completed-items"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加事项模态框 -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddModal()">&times;</span>
+            <h2>添加新事项</h2>
+            <form id="addForm" onsubmit="addItem(event)">
+                <input type="hidden" id="modal-quadrant" value="">
+                <div class="form-group">
+                    <label for="item-text">事项内容：</label>
+                    <textarea id="item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAddModal()">取消</button>
+                    <button type="submit" class="btn-submit">添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 编辑事项模态框 -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>编辑事项</h2>
+            <form id="editForm" onsubmit="saveEditItem(event)">
+                <input type="hidden" id="edit-item-id" value="">
+                <input type="hidden" id="edit-item-quadrant" value="">
+                <div class="form-group">
+                    <label for="edit-item-text">事项内容：</label>
+                    <textarea id="edit-item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">取消</button>
+                    <button type="submit" class="btn-submit">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 设置模态框 -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettingsModal()">&times;</span>
+            <h2>设置</h2>
+            <form id="settingsForm" onsubmit="saveSettings(event)">
+                <div class="form-group">
+                    <label for="gemini-api-key">Gemini API Key：</label>
+                    <input type="password" id="gemini-api-key" placeholder="请输入 Gemini API Key" />
+                    <small class="form-hint">用于生成工作日报，API Key 仅保存在本地浏览器</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeSettingsModal()">取消</button>
+                    <button type="submit" class="btn-submit">保存</button>
+                </div>
+            </form>
+            <div class="export-section">
+                <h3>导出日报</h3>
+                <p class="export-hint">根据已完成事项生成工作日报（需要配置 API Key）</p>
+                <button class="btn-export" onclick="exportDailyReport()">📄 导出日报.txt</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
