@@ -1047,7 +1047,8 @@ async function exportDailyReport() {
     
     console.log('API Key 已配置');
     
-    const exportBtn = document.querySelector('.btn-export');
+    // 日报按钮
+    const exportBtn = document.querySelector('.btn-export-daily');
     const originalText = exportBtn.innerHTML;
     exportBtn.innerHTML = '⏳ 生成中...';
     exportBtn.disabled = true;
@@ -1172,6 +1173,178 @@ ${Object.keys(itemsByQuadrant).map(quadrant => {
     } catch (error) {
         console.error('导出失败:', error);
         alert('导出失败：' + (error.message || '请检查 API Key 是否正确或网络连接'));
+    } finally {
+        exportBtn.innerHTML = originalText;
+        exportBtn.disabled = false;
+    }
+}
+
+// 导出周报（最近 7 天）
+async function exportWeeklyReport() {
+    console.log('开始导出周报...');
+    
+    if (completedItems.length === 0) {
+        console.log('没有已完成事项');
+        alert('暂无已完成事项，无法生成周报');
+        return;
+    }
+    
+    // 检查 API Key
+    const apiKey = localStorage.getItem('geminiApiKey');
+    if (!apiKey) {
+        console.log('未配置 API Key');
+        alert('请先在设置中配置 Gemini API Key');
+        showSettingsModal();
+        return;
+    }
+    
+    console.log('API Key 已配置');
+    
+    const exportBtn = document.querySelector('.btn-export-weekly');
+    const originalText = exportBtn.innerHTML;
+    exportBtn.innerHTML = '⏳ 生成中...';
+    exportBtn.disabled = true;
+    
+    try {
+        const today = new Date();
+        const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const startDate = new Date(endDate);
+        startDate.setDate(startDate.getDate() - 6); // 最近 7 天（含今天）
+        
+        const formatDateLabel = (d) => {
+            return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+        };
+        
+        const startStr = formatDateLabel(startDate);
+        const endStr = formatDateLabel(endDate);
+        
+        console.log(`周报范围: ${startStr} - ${endStr}`);
+        
+        // 过滤出最近 7 天的已完成事项
+        const weeklyItems = completedItems.filter(item => {
+            const date = new Date(item.completedAt || item.createdAt);
+            const dayDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            return dayDate.getTime() >= startDate.getTime() && dayDate.getTime() <= endDate.getTime();
+        });
+        
+        if (weeklyItems.length === 0) {
+            console.log('最近 7 天没有已完成事项');
+            alert('最近 7 天暂无已完成事项，无法生成周报');
+            return;
+        }
+        
+        console.log(`周报事项数量: ${weeklyItems.length}`);
+        
+        // 按象限分组本周已完成事项
+        const itemsByQuadrant = {
+            1: [],
+            2: [],
+            3: [],
+            4: []
+        };
+        
+        weeklyItems.forEach(item => {
+            if (itemsByQuadrant[item.quadrant]) {
+                itemsByQuadrant[item.quadrant].push({
+                    text: item.text,
+                    completedAt: item.completedAt || item.createdAt
+                });
+            }
+        });
+        
+        console.log('本周按象限分组完成:', itemsByQuadrant);
+        
+        // 构建提示词（周报）
+        const prompt = `请根据以下一周内已完成的工作事项，生成一份专业的工作周报。要求：
+1. 使用中文
+2. 格式清晰，包含周起止日期、本周整体总结、本周每日重点与完成事项列表
+3. 对事项按象限进行分类整理（重要且紧急、重要但不紧急、不重要但紧急、不重要且不紧急）
+4. 语言简洁专业，可适当提炼成果亮点和改进点
+5. 可在最后给出下周工作计划建议
+
+周起止日期：${startStr} - ${endStr}
+
+本周已完成事项（按象限分类）：
+${Object.keys(itemsByQuadrant).map(quadrant => {
+    const quadrantName = quadrantNames[quadrant];
+    const items = itemsByQuadrant[quadrant];
+    if (items.length === 0) return '';
+    return `\n【${quadrantName}】\n${items.map((item, idx) => {
+        const time = formatTime(item.completedAt);
+        return `${idx + 1}. ${item.text}（${time}）`;
+    }).join('\n')}`;
+}).filter(s => s).join('\n')}
+
+请生成本周工作周报：`;
+        
+        console.log('\n========== 发送给 Gemini 的周报 Prompt ==========');
+        console.log(prompt);
+        console.log('========== 周报 Prompt 结束 ==========\n');
+        
+        const modelName = 'gemini-2.5-flash';
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+            
+            if (errorMessage.includes('not found') || errorMessage.includes('not supported')) {
+                throw new Error(`模型 ${modelName} 不可用。请检查 API Key 是否正确，或尝试使用其他模型。错误详情：${errorMessage}`);
+            }
+            
+            throw new Error(errorMessage);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
+            throw new Error('API 返回数据格式不正确');
+        }
+        
+        const reportText = data.candidates[0].content.parts[0].text;
+        const dateStr = `${endDate.getFullYear()}${String(endDate.getMonth() + 1).padStart(2, '0')}${String(endDate.getDate()).padStart(2, '0')}`;
+        const fileName = `工作周报_${dateStr}.txt`;
+        
+        if (window.electronAPI && typeof window.electronAPI.saveDailyReport === 'function') {
+            const result = await window.electronAPI.saveDailyReport({
+                defaultFileName: fileName,
+                content: reportText
+            });
+            
+            if (result.success) {
+                alert('周报导出成功！');
+            } else if (result.canceled) {
+                alert('已取消导出');
+            } else {
+                throw new Error(result.error || '保存失败，请重试');
+            }
+        } else {
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+            alert('周报导出成功！');
+        }
+        
+    } catch (error) {
+        console.error('导出周报失败:', error);
+        alert('导出周报失败：' + (error.message || '请检查 API Key 是否正确或网络连接'));
     } finally {
         exportBtn.innerHTML = originalText;
         exportBtn.disabled = false;

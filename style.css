@@ -815,6 +815,11 @@ header {
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
+/* 日报 / 周报按钮之间的间距 */
+.btn-export + .btn-export {
+    margin-top: 8px;
+}
+
 .btn-export:disabled {
     opacity: 0.6;
     cursor: not-allowed;
