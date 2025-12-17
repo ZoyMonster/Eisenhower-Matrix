@@ -757,41 +757,73 @@ function renderCompleted() {
         return new Date(b.completedAt || b.createdAt) - new Date(a.completedAt || a.createdAt);
     });
     
-    sortedItems.forEach(item => {
+    let lastDateString = '';
+    
+    sortedItems.forEach((item, index) => {
+        const itemDateString = getDateString(item.completedAt || item.createdAt);
+        
+        // 如果是新的一天
+        if (itemDateString !== lastDateString) {
+            // 如果不是第一个日期，先添加分界线
+            if (lastDateString !== '') {
+                const divider = document.createElement('div');
+                divider.className = 'completed-date-divider';
+                container.appendChild(divider);
+            }
+            
+            // 添加日期标题
+            const dateHeader = document.createElement('div');
+            dateHeader.className = 'completed-date-header';
+            const date = new Date(item.completedAt || item.createdAt);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const weekday = weekdays[date.getDay()];
+            dateHeader.textContent = `${year}年${month}月${day}日 ${weekday}`;
+            container.appendChild(dateHeader);
+            lastDateString = itemDateString;
+        }
+        
         const itemElement = createCompletedItemElement(item);
         container.appendChild(itemElement);
     });
 }
 
-// 格式化时间
+// 格式化时间（显示完整年月日和星期）
 function formatTime(dateString) {
     if (!dateString) return '';
     
     const date = new Date(dateString);
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const itemDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const timeStr = `${hours}:${minutes}`;
-    
-    // 如果是今天，只显示时间
-    if (itemDate.getTime() === today.getTime()) {
-        return `今天 ${timeStr}`;
-    }
-    
-    // 如果是昨天
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (itemDate.getTime() === yesterday.getTime()) {
-        return `昨天 ${timeStr}`;
-    }
-    
-    // 其他情况显示完整日期
+    const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
-    return `${month}月${day}日 ${timeStr}`;
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    const weekday = weekdays[date.getDay()];
+    
+    return `${year}年${month}月${day}日 ${weekday} ${hours}:${minutes}`;
+}
+
+// 获取日期字符串（用于分组）
+function getDateString(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}-${month}-${day}`;
+}
+
+// 格式化时间（只显示时分，用于已完成事项）
+function formatTimeOnly(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
 }
 
 // 创建已完成事项元素
@@ -799,10 +831,10 @@ function createCompletedItemElement(item) {
     const wrapper = document.createElement('div');
     wrapper.className = 'completed-item-wrapper';
     
-    // 时间显示在卡片上方
+    // 时间显示在卡片上方（只显示时分）
     const timeInfo = document.createElement('div');
     timeInfo.className = 'completed-item-time';
-    timeInfo.textContent = formatTime(item.completedAt || item.createdAt);
+    timeInfo.textContent = formatTimeOnly(item.completedAt || item.createdAt);
     
     // 事项卡片
     const div = document.createElement('div');

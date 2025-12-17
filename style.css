@@ -490,6 +490,29 @@ header {
     margin-bottom: 10px;
 }
 
+.completed-date-header {
+    font-size: 0.9em;
+    color: #1e40af;
+    font-weight: 600;
+    text-align: left;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    border-left: 3px solid rgba(59, 130, 246, 0.5);
+}
+
+.completed-date-header:first-child {
+    margin-top: 0;
+}
+
+.completed-date-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(59, 130, 246, 0.3), transparent);
+    margin: 16px 0;
+}
+
 .completed-item-time {
     font-size: 0.75em;
     color: rgba(107, 114, 128, 0.8);
