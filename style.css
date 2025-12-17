@@ -64,12 +64,6 @@ header {
     align-items: center;
 }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
 .date-display {
     font-size: 1.8em;
     font-weight: 600;
@@ -77,29 +71,36 @@ header {
     letter-spacing: 0.5px;
 }
 
-.tips-btn {
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guide-btn {
     background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    color: #2563eb;
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #d97706;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 1.1em;
+    font-size: 1.5em;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
-.tips-btn:hover {
-    background: #eff6ff;
-    border-color: rgba(59, 130, 246, 0.4);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
+.guide-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(245, 158, 11, 0.7);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
 }
 
 .settings-btn {
@@ -673,6 +674,8 @@ header {
     background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
@@ -685,11 +688,40 @@ header {
     border-radius: 20px;
     width: 90%;
     max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
     box-shadow: 
         0 10px 40px rgba(59, 130, 246, 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
     position: relative;
     animation: slideDown 0.3s ease;
+}
+
+.modal-body {
+    max-height: calc(80vh - 70px);
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-right: -4px; /* 让滚动条贴近右侧圆角边缘 */
+    margin-top: 16px; /* 让滚动区域进一步下移，避免与右上角关闭按钮重叠 */
+}
+
+/* 模态框内部滚动条样式 */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.35);
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.55);
 }
 
 @keyframes slideDown {
@@ -724,6 +756,28 @@ header {
     margin-bottom: 20px;
     color: #1e40af;
     font-weight: 600;
+}
+
+.guide-content {
+    font-size: 0.95em;
+    color: #374151;
+    line-height: 1.6;
+}
+
+.guide-content h3 {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-size: 1em;
+    color: #1e40af;
+}
+
+.guide-content ul {
+    padding-left: 18px;
+    margin-bottom: 8px;
+}
+
+.guide-content li {
+    margin-bottom: 4px;
 }
 
 .form-group {

@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const addModal = document.getElementById('addModal');
         const editModal = document.getElementById('editModal');
         const settingsModal = document.getElementById('settingsModal');
-        const tipsModal = document.getElementById('tipsModal');
+        const guideModal = document.getElementById('guideModal');
         if (event.target === addModal) {
             closeAddModal();
         }
@@ -67,8 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (event.target === settingsModal) {
             closeSettingsModal();
         }
-        if (event.target === tipsModal) {
-            closeTipsModal();
+        if (event.target === guideModal) {
+            closeGuideModal();
         }
     };
     
@@ -170,7 +170,7 @@ function showAddModal(quadrant) {
     const textarea = document.getElementById('item-text');
     document.getElementById('modal-quadrant').value = quadrant;
     textarea.value = '';
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
     textarea.focus();
     
     // 输入法组合事件，避免中文输入按回车误触发提交
@@ -203,7 +203,7 @@ function showEditModal(itemId, quadrant, currentText) {
     document.getElementById('edit-item-id').value = itemId;
     document.getElementById('edit-item-quadrant').value = quadrant;
     document.getElementById('edit-item-text').value = currentText;
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
     const editTextarea = document.getElementById('edit-item-text');
     editTextarea.focus();
     editTextarea.select();
@@ -994,7 +994,7 @@ function showSettingsModal() {
         apiKeyInput.placeholder = '请输入 Gemini API Key';
     }
     
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
     apiKeyInput.focus();
 }
 
@@ -1002,6 +1002,22 @@ function showSettingsModal() {
 function closeSettingsModal() {
     const modal = document.getElementById('settingsModal');
     modal.style.display = 'none';
+}
+
+// 显示使用指南模态框
+function showGuideModal() {
+    const modal = document.getElementById('guideModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+// 关闭使用指南模态框
+function closeGuideModal() {
+    const modal = document.getElementById('guideModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // 保存设置
@@ -1025,22 +1041,6 @@ function saveSettings(event) {
 // 加载设置
 function loadSettings() {
     // 设置已在 showSettingsModal 中加载
-}
-
-// 显示使用指南模态框
-function showTipsModal() {
-    const modal = document.getElementById('tipsModal');
-    if (modal) {
-        modal.style.display = 'block';
-    }
-}
-
-// 关闭使用指南模态框
-function closeTipsModal() {
-    const modal = document.getElementById('tipsModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
 }
 
 // 导出日报

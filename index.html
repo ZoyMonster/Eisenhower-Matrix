@@ -12,7 +12,7 @@
             <div class="header-content">
                 <div class="date-display" id="dateDisplay"></div>
                 <div class="header-actions">
-                    <button class="tips-btn" onclick="showTipsModal()" title="使用指南">?</button>
+                    <button class="guide-btn" onclick="showGuideModal()" title="使用指南">💡</button>
                     <button class="settings-btn" onclick="showSettingsModal()" title="设置">⚙️</button>
                 </div>
             </div>
@@ -71,22 +71,58 @@
         </div>
     </div>
 
+    <!-- 使用指南模态框 -->
+    <div id="guideModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGuideModal()">&times;</span>
+            <div class="modal-body">
+                <h2>使用指南</h2>
+                <div class="guide-content">
+                <p>这是一个基于艾森豪威尔矩阵的工作管理工具，帮助你用「重要 / 紧急」四象限来规划和复盘每天的工作。</p>
+                <h3>一、四象限说明</h3>
+                <ul>
+                    <li><strong>重要且紧急</strong>：今天必须完成的核心任务和突发紧急事项。</li>
+                    <li><strong>重要但不紧急</strong>：战略性工作、自我提升、需要主动推进但不马上到期的任务。</li>
+                    <li><strong>不重要但紧急</strong>：打断类工作、他人临时请求、可协商或委派的事项。</li>
+                    <li><strong>不重要且不紧急</strong>：低价值、可果断放弃或大幅压缩时间的事情。</li>
+                </ul>
+                <h3>二、如何使用</h3>
+                <ul>
+                    <li>点击四个象限右上角的「+ 添加事项」，录入待办。</li>
+                    <li>勾选左侧复选框，将事项移动到右侧「已完成清单」。</li>
+                    <li>支持拖拽：在象限内拖拽可调整优先级，跨象限拖拽可重新归类任务。</li>
+                    <li>右键某个事项可将其「聚焦」，便于今天主攻的关键任务突出显示。</li>
+                </ul>
+                <h3>三、日报 / 周报</h3>
+                <ul>
+                    <li>点击右上角「⚙️」进入设置，配置 Gemini API Key。</li>
+                    <li>在设置中点击「📄 导出日报.txt」，基于当天已完成事项生成工作日报。</li>
+                    <li>点击「📆 导出周报.txt」，自动汇总最近 7 天的完成记录生成工作周报。</li>
+                </ul>
+                <p>建议你每天结束前，用 3–5 分钟勾选完成事项并导出日报，每周末导出一次周报，持续复盘、稳步进步。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 添加事项模态框 -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeAddModal()">&times;</span>
-            <h2>添加新事项</h2>
-            <form id="addForm" onsubmit="addItem(event)">
-                <input type="hidden" id="modal-quadrant" value="">
-                <div class="form-group">
-                    <label for="item-text">事项内容：</label>
-                    <textarea id="item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeAddModal()">取消</button>
-                    <button type="submit" class="btn-submit">添加</button>
-                </div>
-            </form>
+            <div class="modal-body">
+                <h2>添加新事项</h2>
+                <form id="addForm" onsubmit="addItem(event)">
+                    <input type="hidden" id="modal-quadrant" value="">
+                    <div class="form-group">
+                        <label for="item-text">事项内容：</label>
+                        <textarea id="item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeAddModal()">取消</button>
+                        <button type="submit" class="btn-submit">添加</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -94,19 +130,21 @@
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeEditModal()">&times;</span>
-            <h2>编辑事项</h2>
-            <form id="editForm" onsubmit="saveEditItem(event)">
-                <input type="hidden" id="edit-item-id" value="">
-                <input type="hidden" id="edit-item-quadrant" value="">
-                <div class="form-group">
-                    <label for="edit-item-text">事项内容：</label>
-                    <textarea id="edit-item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeEditModal()">取消</button>
-                    <button type="submit" class="btn-submit">保存</button>
-                </div>
-            </form>
+            <div class="modal-body">
+                <h2>编辑事项</h2>
+                <form id="editForm" onsubmit="saveEditItem(event)">
+                    <input type="hidden" id="edit-item-id" value="">
+                    <input type="hidden" id="edit-item-quadrant" value="">
+                    <div class="form-group">
+                        <label for="edit-item-text">事项内容：</label>
+                        <textarea id="edit-item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeEditModal()">取消</button>
+                        <button type="submit" class="btn-submit">保存</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -114,40 +152,25 @@
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeSettingsModal()">&times;</span>
-            <h2>设置</h2>
-            <form id="settingsForm" onsubmit="saveSettings(event)">
-                <div class="form-group">
-                    <label for="gemini-api-key">Gemini API Key：</label>
-                    <input type="password" id="gemini-api-key" placeholder="请输入 Gemini API Key" />
-                    <small class="form-hint">用于生成工作日报 / 周报，API Key 仅保存在本地浏览器</small>
+            <div class="modal-body">
+                <h2>设置</h2>
+                <form id="settingsForm" onsubmit="saveSettings(event)">
+                    <div class="form-group">
+                        <label for="gemini-api-key">Gemini API Key：</label>
+                        <input type="password" id="gemini-api-key" placeholder="请输入 Gemini API Key" />
+                        <small class="form-hint">用于生成工作日报 / 周报，API Key 仅保存在本地浏览器</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeSettingsModal()">取消</button>
+                        <button type="submit" class="btn-submit">保存</button>
+                    </div>
+                </form>
+                <div class="export-section">
+                    <h3>导出报告</h3>
+                    <p class="export-hint">根据已完成事项生成工作日报或周报（需要配置 API Key）</p>
+                    <button class="btn-export btn-export-daily" onclick="exportDailyReport()">📄 导出日报.txt</button>
+                    <button class="btn-export btn-export-weekly" onclick="exportWeeklyReport()">📆 导出周报.txt</button>
                 </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeSettingsModal()">取消</button>
-                    <button type="submit" class="btn-submit">保存</button>
-                </div>
-            </form>
-            <div class="export-section">
-                <h3>导出报告</h3>
-                <p class="export-hint">根据已完成事项生成工作日报或周报（需要配置 API Key）</p>
-                <button class="btn-export btn-export-daily" onclick="exportDailyReport()">📄 导出日报.txt</button>
-                <button class="btn-export btn-export-weekly" onclick="exportWeeklyReport()">📆 导出周报.txt</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 使用指南模态框 -->
-    <div id="tipsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeTipsModal()">&times;</span>
-            <h2>使用指南</h2>
-            <div class="tips-content">
-                <p>欢迎使用「艾森豪威尔矩阵 - 工作日报管理」：</p>
-                <ul>
-                    <li>在四象限中添加、拖拽、排序任务，区分「重要 / 紧急」程度。</li>
-                    <li>勾选任务会移动到右侧「已完成清单」，右键可聚焦重要任务。</li>
-                    <li>底部「设置」中配置 Gemini API Key 后，可导出「日报」和「周报」文本文件。</li>
-                    <li>已完成清单会按日期分组显示，方便你回顾每天和每周的成果。</li>
-                </ul>
             </div>
         </div>
     </div>
