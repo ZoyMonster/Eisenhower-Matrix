@@ -11,7 +11,10 @@
         <header>
             <div class="header-content">
                 <div class="date-display" id="dateDisplay"></div>
-                <button class="settings-btn" onclick="showSettingsModal()" title="设置">⚙️</button>
+                <div class="header-actions">
+                    <button class="tips-btn" onclick="showTipsModal()" title="使用指南">?</button>
+                    <button class="settings-btn" onclick="showSettingsModal()" title="设置">⚙️</button>
+                </div>
             </div>
         </header>
 
@@ -128,6 +131,23 @@
                 <p class="export-hint">根据已完成事项生成工作日报或周报（需要配置 API Key）</p>
                 <button class="btn-export btn-export-daily" onclick="exportDailyReport()">📄 导出日报.txt</button>
                 <button class="btn-export btn-export-weekly" onclick="exportWeeklyReport()">📆 导出周报.txt</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使用指南模态框 -->
+    <div id="tipsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTipsModal()">&times;</span>
+            <h2>使用指南</h2>
+            <div class="tips-content">
+                <p>欢迎使用「艾森豪威尔矩阵 - 工作日报管理」：</p>
+                <ul>
+                    <li>在四象限中添加、拖拽、排序任务，区分「重要 / 紧急」程度。</li>
+                    <li>勾选任务会移动到右侧「已完成清单」，右键可聚焦重要任务。</li>
+                    <li>底部「设置」中配置 Gemini API Key 后，可导出「日报」和「周报」文本文件。</li>
+                    <li>已完成清单会按日期分组显示，方便你回顾每天和每周的成果。</li>
+                </ul>
             </div>
         </div>
     </div>

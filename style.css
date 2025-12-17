@@ -64,11 +64,42 @@ header {
     align-items: center;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .date-display {
     font-size: 1.8em;
     font-weight: 600;
     color: #1e40af;
     letter-spacing: 0.5px;
+}
+
+.tips-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #2563eb;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+}
+
+.tips-btn:hover {
+    background: #eff6ff;
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
 }
 
 .settings-btn {

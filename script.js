@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const addModal = document.getElementById('addModal');
         const editModal = document.getElementById('editModal');
         const settingsModal = document.getElementById('settingsModal');
+        const tipsModal = document.getElementById('tipsModal');
         if (event.target === addModal) {
             closeAddModal();
         }
@@ -65,6 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (event.target === settingsModal) {
             closeSettingsModal();
+        }
+        if (event.target === tipsModal) {
+            closeTipsModal();
         }
     };
     
@@ -1021,6 +1025,22 @@ function saveSettings(event) {
 // 加载设置
 function loadSettings() {
     // 设置已在 showSettingsModal 中加载
+}
+
+// 显示使用指南模态框
+function showTipsModal() {
+    const modal = document.getElementById('tipsModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+// 关闭使用指南模态框
+function closeTipsModal() {
+    const modal = document.getElementById('tipsModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // 导出日报
