@@ -31,10 +31,26 @@ document.addEventListener('DOMContentLoaded', function() {
     loadData();
     renderAll();
     initDragAndDrop();
-
-    // 定期刷新日期显示，防止跨天后仍显示前一天
+    
+    // 设置跨天定时器（在0点时精确更新）
+    setupMidnightTimer();
+    
+    // 定期刷新日期显示，防止跨天后仍显示前一天（备用机制）
     // 每分钟检查一次当前日期并更新头部显示
     setInterval(updateDateDisplay, 60 * 1000);
+    
+    // 页面可见性变化时立即检查并更新日期（标签页切换回来时）
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            // 页面重新可见时，立即更新日期
+            updateDateDisplay();
+        }
+    });
+    
+    // 窗口获得焦点时也检查日期（切换回应用时）
+    window.addEventListener('focus', function() {
+        updateDateDisplay();
+    });
     
     // 点击模态框外部关闭
     window.onclick = function(event) {
@@ -95,6 +111,9 @@ function initDragAndDrop() {
     }
 }
 
+// 当前显示的日期（用于检测日期变化）
+let currentDisplayedDate = null;
+
 // 更新日期显示
 function updateDateDisplay() {
     const dateDisplay = document.getElementById('dateDisplay');
@@ -105,10 +124,37 @@ function updateDateDisplay() {
     const month = now.getMonth() + 1;
     const day = now.getDate();
     
+    // 生成日期字符串用于比较
+    const dateString = `${year}-${month}-${day}`;
+    
+    // 如果日期没有变化，不更新（避免不必要的DOM操作）
+    if (currentDisplayedDate === dateString) {
+        return;
+    }
+    
+    // 日期已变化，更新显示
+    currentDisplayedDate = dateString;
     const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
     const weekday = weekdays[now.getDay()];
     
     dateDisplay.textContent = `${year}年${month}月${day}日 ${weekday}`;
+}
+
+// 设置跨天定时器（在0点时更新日期）
+function setupMidnightTimer() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // 设置为明天的0点0分0秒
+    
+    const msUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    // 设置定时器，在跨天时更新日期
+    setTimeout(function() {
+        updateDateDisplay();
+        // 跨天后，重新设置下一个跨天定时器（递归调用）
+        setupMidnightTimer();
+    }, msUntilMidnight);
 }
 
 // 输入法组合标记，用于避免中文输入过程中按回车触发提交
