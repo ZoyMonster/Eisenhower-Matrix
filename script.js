@@ -1274,6 +1274,27 @@ async function exportWeeklyReport() {
         
         console.log('本周按象限分组完成:', itemsByQuadrant);
         
+        // 收集未完成事项（用于下周工作安排参考）
+        const pendingItems = [];
+        for (let q = 1; q <= 4; q++) {
+            const key = `quadrant${q}`;
+            if (Array.isArray(items[key])) {
+                items[key].forEach(it => {
+                    pendingItems.push({
+                        text: it.text,
+                        quadrant: q
+                    });
+                });
+            }
+        }
+        
+        const pendingText = pendingItems.length === 0
+            ? '无'
+            : pendingItems.map((it, idx) => {
+                const quadrantName = quadrantNames[it.quadrant] || '';
+                return `${idx + 1}）${it.text}（${quadrantName}）`;
+            }).join('\n');
+        
         // 构建提示词（周报），要求严格按照指定模板输出，且不得使用 Markdown
         const prompt = `请根据以下一周内已完成的工作事项，生成一份工作周报，必须严格按照下面给出的中文模板格式输出。要求：
 1. 使用中文。
@@ -1282,8 +1303,8 @@ async function exportWeeklyReport() {
 4. {项目名} 可根据事项内容自动归类总结；如无法区分项目，可统一用「日常工作」等合理名称。
 5. 「目前进度」「耗时」「上线」如无法从数据中精确得出，可结合事项内容合理估计并填写，但格式必须保持一致。
 6. 「完成事项X（xx月xx日）」列表来自下方提供的本周事项，日期格式为「M月D日」，可以按项目维度进行合并和归纳。
-7. 「二、下周工作安排」可以根据本周事项内容，合理推测 3 点计划。
-8. 「三.本周故障汇报」「四.存在的问题及隐患」「五.其他」如无特别信息，可按照模板保持为「无」。
+7. 「二、下周工作安排」必须参考下方提供的“未完成事项”生成 3 条计划，可适当合并、归纳和安排优先级。
+8. 「三.本周故障汇报」「四.存在的问题及隐患」「五.其他」如无特别信息，可按照模板保持为空或填写“无”。
 9. 输出必须为普通文本格式，严禁使用任何 Markdown 语法或符号（例如 #、*、-、_、\`\`\` 等），也不要加多余的空行装饰。
 
 周起止日期：${startStr} - ${endStr}
@@ -1299,6 +1320,9 @@ ${Object.keys(itemsByQuadrant).map(quadrant => {
     }).join('\n')}`;
 }).filter(s => s).join('\n')}
 
+未完成事项（用于下周工作安排参考，请合理提炼为 3 条计划）：
+${pendingText}
+
 请严格按照下面模板输出完整的周报正文（不要附加任何解释），注意用实际内容替换花括号中的占位内容：
 
 本周（x月x日- x月x日）工作情况通报
@@ -1309,11 +1333,9 @@ ${Object.keys(itemsByQuadrant).map(quadrant => {
 
 目前进度：xx%  耗时：x小时  上线：mm.dd
 
-完成事项1（xx月xx日）
-
-完成事项2（xx月xx日）
-
-完成事项3（xx月xx日）
+1）、{完成事项}（xx月xx日）
+2）、{完成事项}（xx月xx日）
+3）、{完成事项}（xx月xx日）
 
 ...
 
@@ -1321,11 +1343,9 @@ ${Object.keys(itemsByQuadrant).map(quadrant => {
 
 目前进度：xx%  耗时：x小时  上线：mm.dd
 
-完成事项1（xx月xx日）
-
-完成事项2（xx月xx日）
-
-完成事项3（xx月xx日）
+1）、{完成事项}（xx月xx日）
+2）、{完成事项}（xx月xx日）
+3）、{完成事项}（xx月xx日）
 
 ...
 
@@ -1333,11 +1353,9 @@ ${Object.keys(itemsByQuadrant).map(quadrant => {
 
 目前进度：xx%  耗时：x小时  上线：mm.dd
 
-完成事项1（xx月xx日）
-
-完成事项2（xx月xx日）
-
-完成事项3（xx月xx日）
+1）、{完成事项}（xx月xx日）
+2）、{完成事项}（xx月xx日）
+3）、{完成事项}（xx月xx日）
 
 ...
 
