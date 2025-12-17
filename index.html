@@ -13,7 +13,7 @@
                 <div class="date-display" id="dateDisplay"></div>
                 <div class="header-actions">
                     <button class="guide-btn" onclick="showGuideModal()" title="使用指南">💡</button>
-                    <button class="settings-btn" onclick="showSettingsModal()" title="设置">⚙️</button>
+                <button class="settings-btn" onclick="showSettingsModal()" title="设置">⚙️</button>
                 </div>
             </div>
         </header>
@@ -110,18 +110,18 @@
         <div class="modal-content">
             <span class="close" onclick="closeAddModal()">&times;</span>
             <div class="modal-body">
-                <h2>添加新事项</h2>
-                <form id="addForm" onsubmit="addItem(event)">
-                    <input type="hidden" id="modal-quadrant" value="">
-                    <div class="form-group">
-                        <label for="item-text">事项内容：</label>
-                        <textarea id="item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel" onclick="closeAddModal()">取消</button>
-                        <button type="submit" class="btn-submit">添加</button>
-                    </div>
-                </form>
+            <h2>添加新事项</h2>
+            <form id="addForm" onsubmit="addItem(event)">
+                <input type="hidden" id="modal-quadrant" value="">
+                <div class="form-group">
+                    <label for="item-text">事项内容：</label>
+                    <textarea id="item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAddModal()">取消</button>
+                    <button type="submit" class="btn-submit">添加</button>
+                </div>
+            </form>
             </div>
         </div>
     </div>
@@ -131,19 +131,19 @@
         <div class="modal-content">
             <span class="close" onclick="closeEditModal()">&times;</span>
             <div class="modal-body">
-                <h2>编辑事项</h2>
-                <form id="editForm" onsubmit="saveEditItem(event)">
-                    <input type="hidden" id="edit-item-id" value="">
-                    <input type="hidden" id="edit-item-quadrant" value="">
-                    <div class="form-group">
-                        <label for="edit-item-text">事项内容：</label>
-                        <textarea id="edit-item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel" onclick="closeEditModal()">取消</button>
-                        <button type="submit" class="btn-submit">保存</button>
-                    </div>
-                </form>
+            <h2>编辑事项</h2>
+            <form id="editForm" onsubmit="saveEditItem(event)">
+                <input type="hidden" id="edit-item-id" value="">
+                <input type="hidden" id="edit-item-quadrant" value="">
+                <div class="form-group">
+                    <label for="edit-item-text">事项内容：</label>
+                    <textarea id="edit-item-text" rows="3" placeholder="请输入事项内容..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">取消</button>
+                    <button type="submit" class="btn-submit">保存</button>
+                </div>
+            </form>
             </div>
         </div>
     </div>
@@ -153,19 +153,19 @@
         <div class="modal-content">
             <span class="close" onclick="closeSettingsModal()">&times;</span>
             <div class="modal-body">
-                <h2>设置</h2>
-                <form id="settingsForm" onsubmit="saveSettings(event)">
-                    <div class="form-group">
-                        <label for="gemini-api-key">Gemini API Key：</label>
-                        <input type="password" id="gemini-api-key" placeholder="请输入 Gemini API Key" />
+            <h2>设置</h2>
+            <form id="settingsForm" onsubmit="saveSettings(event)">
+                <div class="form-group">
+                    <label for="gemini-api-key">Gemini API Key：</label>
+                    <input type="password" id="gemini-api-key" placeholder="请输入 Gemini API Key" />
                         <small class="form-hint">用于生成工作日报 / 周报，API Key 仅保存在本地浏览器</small>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel" onclick="closeSettingsModal()">取消</button>
-                        <button type="submit" class="btn-submit">保存</button>
-                    </div>
-                </form>
-                <div class="export-section">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeSettingsModal()">取消</button>
+                    <button type="submit" class="btn-submit">保存</button>
+                </div>
+            </form>
+            <div class="export-section">
                     <h3>导出报告</h3>
                     <p class="export-hint">根据已完成事项生成工作日报或周报（需要配置 API Key）</p>
                     <button class="btn-export btn-export-daily" onclick="exportDailyReport()">📄 导出日报.txt</button>

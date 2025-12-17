@@ -1384,32 +1384,61 @@ ${pendingText}
         const modelName = 'gemini-2.5-flash';
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
         
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }]
-            })
-        });
+        // 简单的重试封装（最多 3 次）
+        const maxRetries = 3;
+        let attempt = 0;
+        let lastError = null;
+        let data = null;
         
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            const errorMessage = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-            
-            if (errorMessage.includes('not found') || errorMessage.includes('not supported')) {
-                throw new Error(`模型 ${modelName} 不可用。请检查 API Key 是否正确，或尝试使用其他模型。错误详情：${errorMessage}`);
+        while (attempt < maxRetries && !data) {
+            try {
+                attempt += 1;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const errorMessage = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+                    
+                    if (errorMessage.includes('not found') || errorMessage.includes('not supported')) {
+                        throw new Error(`模型 ${modelName} 不可用。请检查 API Key 是否正确，或尝试使用其他模型。错误详情：${errorMessage}`);
+                    }
+                    
+                    // 若为模型繁忙（overloaded），尝试重试
+                    if (errorMessage.toLowerCase().includes('overloaded') && attempt < maxRetries) {
+                        lastError = new Error(errorMessage);
+                        continue;
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+                
+                data = await response.json();
+            } catch (err) {
+                lastError = err;
+                // 对于模型繁忙的错误，允许继续重试，其他错误直接抛出
+                const msg = err?.message || '';
+                if (msg.toLowerCase().includes('overloaded') && attempt < maxRetries) {
+                    continue;
+                }
+                throw err;
             }
-            
-            throw new Error(errorMessage);
         }
         
-        const data = await response.json();
+        if (!data) {
+            throw lastError || new Error('生成周报失败，未知原因');
+        }
         
         if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
             throw new Error('API 返回数据格式不正确');
@@ -1444,11 +1473,11 @@ ${pendingText}
         
     } catch (error) {
         console.error('导出周报失败:', error);
-        const msg = error.message || '';
-        if (msg.toLowerCase().includes('overloaded')) {
-            alert('导出周报失败：Gemini 模型当前繁忙，请几分钟后再试一次。');
+        const msg = (error && error.message) ? error.message.toLowerCase() : '';
+        if (msg.includes('overloaded')) {
+            alert('导出周报失败：已自动重试 3 次，Gemini 模型仍然繁忙，请几分钟后再试一次。');
         } else {
-            alert('导出周报失败：' + (msg || '请检查 API Key 是否正确或网络连接'));
+            alert('导出周报失败：' + (error.message || '请检查 API Key 是否正确或网络连接'));
         }
     } finally {
         exportBtn.innerHTML = originalText;
