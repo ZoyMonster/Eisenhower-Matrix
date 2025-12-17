@@ -1274,7 +1274,7 @@ async function exportWeeklyReport() {
         
         console.log('本周按象限分组完成:', itemsByQuadrant);
         
-        // 构建提示词（周报），要求严格按照指定模板输出
+        // 构建提示词（周报），要求严格按照指定模板输出，且不得使用 Markdown
         const prompt = `请根据以下一周内已完成的工作事项，生成一份工作周报，必须严格按照下面给出的中文模板格式输出。要求：
 1. 使用中文。
 2. 保持所有标题、序号和标点与模板完全一致，只替换花括号中的内容。
@@ -1284,6 +1284,7 @@ async function exportWeeklyReport() {
 6. 「完成事项X（xx月xx日）」列表来自下方提供的本周事项，日期格式为「M月D日」，可以按项目维度进行合并和归纳。
 7. 「二、下周工作安排」可以根据本周事项内容，合理推测 3 点计划。
 8. 「三.本周故障汇报」「四.存在的问题及隐患」「五.其他」如无特别信息，可按照模板保持为「无」。
+9. 输出必须为普通文本格式，严禁使用任何 Markdown 语法或符号（例如 #、*、-、_、\`\`\` 等），也不要加多余的空行装饰。
 
 周起止日期：${startStr} - ${endStr}
 
@@ -1425,7 +1426,12 @@ ${Object.keys(itemsByQuadrant).map(quadrant => {
         
     } catch (error) {
         console.error('导出周报失败:', error);
-        alert('导出周报失败：' + (error.message || '请检查 API Key 是否正确或网络连接'));
+        const msg = error.message || '';
+        if (msg.toLowerCase().includes('overloaded')) {
+            alert('导出周报失败：Gemini 模型当前繁忙，请几分钟后再试一次。');
+        } else {
+            alert('导出周报失败：' + (msg || '请检查 API Key 是否正确或网络连接'));
+        }
     } finally {
         exportBtn.innerHTML = originalText;
         exportBtn.disabled = false;
