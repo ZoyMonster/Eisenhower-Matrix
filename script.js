@@ -1076,11 +1076,29 @@ async function exportDailyReport() {
     try {
         // 准备已完成事项数据
         const today = new Date();
+        const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const todayStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
         
         console.log(`日期: ${todayStr}`);
         
-        // 按象限分组已完成事项
+        // 过滤出今天完成的事项
+        const todayItems = completedItems.filter(item => {
+            const itemDate = new Date(item.completedAt || item.createdAt);
+            const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+            return itemDateOnly.getTime() === todayDate.getTime();
+        });
+        
+        if (todayItems.length === 0) {
+            console.log('今天没有已完成事项');
+            alert('今天暂无已完成事项，无法生成日报');
+            exportBtn.innerHTML = originalText;
+            exportBtn.disabled = false;
+            return;
+        }
+        
+        console.log(`今天已完成事项数量: ${todayItems.length}`);
+        
+        // 按象限分组今日已完成事项
         const itemsByQuadrant = {
             1: [],
             2: [],
@@ -1088,7 +1106,7 @@ async function exportDailyReport() {
             4: []
         };
         
-        completedItems.forEach(item => {
+        todayItems.forEach(item => {
             if (itemsByQuadrant[item.quadrant]) {
                 itemsByQuadrant[item.quadrant].push({
                     text: item.text,
@@ -1099,16 +1117,16 @@ async function exportDailyReport() {
         
         console.log('按象限分组完成:', itemsByQuadrant);
         
-        // 构建提示词
-        const prompt = `请根据以下已完成的工作事项，生成一份专业的工作日报。要求：
-1. 使用中文
-2. 格式清晰，包含日期、工作总结、完成事项列表
-3. 对事项进行分类整理
-4. 语言简洁专业
+        // 构建提示词（日报），要求输出为普通文本，不使用 Markdown
+        const prompt = `请根据以下已完成的工作事项，生成一份专业的工作日报，输出必须是普通文本格式，不能使用任何 Markdown 语法或符号（例如 #、*、-、_、\`\`\` 等）。要求：
+1. 使用中文。
+2. 语言简洁专业，结构清晰。
+3. 日报中需包含：日期、今日整体工作概述、按项目归类的完成事项列表、明日工作安排和需要关注的问题/风险。
+4. 可以根据事项内容自动归纳项目名称；如无法区分项目，可使用「日常工作」等合理名称。
 
 日期：${todayStr}
 
-已完成事项：
+已完成事项（按象限分类，仅供参考，请按项目维度自行归纳，不要在日报中直接出现象限名称）：
 ${Object.keys(itemsByQuadrant).map(quadrant => {
     const quadrantName = quadrantNames[quadrant];
     const items = itemsByQuadrant[quadrant];
@@ -1119,7 +1137,33 @@ ${Object.keys(itemsByQuadrant).map(quadrant => {
     }).join('\n')}`;
 }).filter(s => s).join('\n')}
 
-请生成工作日报：`;
+请生成工作日报正文，建议参考如下结构（仅供参考，可按需要微调，但请保持为普通文本，不要使用 Markdown）：
+
+一、今日工作概述
+简要概括今天的整体工作情况和关键进展。
+
+二、按项目汇总的完成事项
+1.{项目名A}
+1）{完成事项}
+2）{完成事项}
+3）{完成事项}
+……
+
+2.{项目名B}
+1）{完成事项}
+2）{完成事项}
+……
+
+三、明日工作安排
+1）{计划事项}
+2）{计划事项}
+3）{计划事项}
+
+四、问题与风险
+如无，可写「无」；如有，请简要说明问题、影响和后续计划。
+
+五、其他
+可写「无」，或补充需要记录的说明。`;
 
         // 在控制台输出 prompt，方便调试
         console.log('\n========== 发送给 Gemini 的 Prompt ==========');
@@ -1130,33 +1174,62 @@ ${Object.keys(itemsByQuadrant).map(quadrant => {
         const modelName = 'gemini-2.5-flash';
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
         
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }]
-            })
-        });
+        // 简单的重试封装（最多 3 次），与周报逻辑保持一致
         
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            const errorMessage = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-            
-            // 如果是因为模型不存在，提供更友好的错误信息
-            if (errorMessage.includes('not found') || errorMessage.includes('not supported')) {
-                throw new Error(`模型 ${modelName} 不可用。请检查 API Key 是否正确，或尝试使用其他模型。错误详情：${errorMessage}`);
+        const maxRetries = 3;
+        let attempt = 0;
+        let lastError = null;
+        let data = null;
+        
+        while (attempt < maxRetries && !data) {
+            try {
+                attempt += 1;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const errorMessage = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+                    
+                    // 如果是因为模型不存在，提供更友好的错误信息
+                    if (errorMessage.includes('not found') || errorMessage.includes('not supported')) {
+                        throw new Error(`模型 ${modelName} 不可用。请检查 API Key 是否正确，或尝试使用其他模型。错误详情：${errorMessage}`);
+                    }
+                    
+                    // 若为模型繁忙（overloaded），尝试重试
+                    if (errorMessage.toLowerCase().includes('overloaded') && attempt < maxRetries) {
+                        lastError = new Error(errorMessage);
+                        continue;
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+                
+                data = await response.json();
+            } catch (err) {
+                lastError = err;
+                const msg = err?.message || '';
+                if (msg.toLowerCase().includes('overloaded') && attempt < maxRetries) {
+                    continue;
+                }
+                throw err;
             }
-            
-            throw new Error(errorMessage);
         }
         
-        const data = await response.json();
+        if (!data) {
+            throw lastError || new Error('生成日报失败，未知原因');
+        }
         
         // 检查响应数据格式
         if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
@@ -1192,7 +1265,12 @@ ${Object.keys(itemsByQuadrant).map(quadrant => {
         
     } catch (error) {
         console.error('导出失败:', error);
-        alert('导出失败：' + (error.message || '请检查 API Key 是否正确或网络连接'));
+        const msg = (error && error.message) ? error.message.toLowerCase() : '';
+        if (msg.includes('overloaded')) {
+            alert('导出日报失败：已自动重试 3 次，Gemini 模型仍然繁忙，请几分钟后再试一次。');
+        } else {
+            alert('导出日报失败：' + (error.message || '请检查 API Key 是否正确或网络连接'));
+        }
     } finally {
         exportBtn.innerHTML = originalText;
         exportBtn.disabled = false;
