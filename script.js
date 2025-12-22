@@ -692,17 +692,28 @@ function handleItemDrop(e) {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!draggedItem || !dragOverItem) {
+    if (!draggedItem) {
         return false;
     }
     
-    const draggedItemId = parseInt(draggedItem.dataset.itemId);
-    const targetItemId = parseInt(dragOverItem.dataset.itemId);
-    const quadrant = draggedQuadrant;
+    // 先判断是否是跨象限拖拽到目标象限的事项列表上
+    const quadrantElement = e.currentTarget.closest('.quadrant');
+    const targetQuadrant = quadrantElement ? parseInt(quadrantElement.dataset.quadrant) : null;
     
-    // 如果拖拽到同一象限内的其他事项，调整顺序
-    if (quadrant && draggedItemId !== targetItemId) {
-        reorderItemsInQuadrant(draggedItemId, targetItemId, quadrant, dragOverItem.classList.contains('drag-over-before'));
+    if (targetQuadrant && draggedQuadrant && targetQuadrant !== draggedQuadrant) {
+        // 跨象限拖拽：直接移动到目标象限（不处理排序）
+        const draggedItemId = parseInt(draggedItem.dataset.itemId);
+        moveItemToQuadrant(draggedItemId, draggedQuadrant, targetQuadrant);
+    } else if (dragOverItem) {
+        // 同一象限内排序
+        const draggedItemId = parseInt(draggedItem.dataset.itemId);
+        const targetItemId = parseInt(dragOverItem.dataset.itemId);
+        const quadrant = draggedQuadrant;
+        
+        // 如果拖拽到同一象限内的其他事项，调整顺序
+        if (quadrant && draggedItemId !== targetItemId) {
+            reorderItemsInQuadrant(draggedItemId, targetItemId, quadrant, dragOverItem.classList.contains('drag-over-before'));
+        }
     }
     
     // 清除样式
